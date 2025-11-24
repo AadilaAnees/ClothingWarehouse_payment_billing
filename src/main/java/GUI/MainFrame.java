@@ -70,22 +70,28 @@ public class MainFrame extends JFrame {
             case "admin":
                 AdminDashboardPanel adminDashboard = new AdminDashboardPanel(this);
                 EmployeePanel adminEmployeePanel = new EmployeePanel(loggedInUser);
+                CustomerPanel adminCustomerPanel = new CustomerPanel(loggedInUser);
                 mainPanel.add(adminDashboard, "Dashboard");
                 mainPanel.add(adminEmployeePanel, "Employee");
+                mainPanel.add(adminCustomerPanel, "Customer");
                 statusLabel.setText("Welcome Admin!");
                 break;
 
             case "manager":
                 ManagerDashboardPanel managerDashboard = new ManagerDashboardPanel(this);
                 EmployeePanel managerEmployeePanel = new EmployeePanel(loggedInUser);
+                CustomerPanel managerCustomerPanel = new CustomerPanel(loggedInUser);
                 mainPanel.add(managerDashboard, "Dashboard");
                 mainPanel.add(managerEmployeePanel, "Employee");
+                mainPanel.add(managerCustomerPanel, "Customer");
                 statusLabel.setText("Welcome Manager!");
                 break;
 
             case "staff":
                 StaffDashboardPanel staffDashboard = new StaffDashboardPanel(this);
+                CustomerPanel staffCustomerPanel = new CustomerPanel(loggedInUser); // <-- added for staff
                 mainPanel.add(staffDashboard, "Dashboard");
+                mainPanel.add(staffCustomerPanel, "Customer"); // <-- register customer panel
                 statusLabel.setText("Welcome Staff!");
                 break;
 

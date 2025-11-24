@@ -4,6 +4,7 @@ import DBConnection.DBConnect;
 import Models.User;
 import DAO.EmployeeDAO;
 import Models.Employee;
+import utils.PasswordUtil;   // <-- ADD THIS
 
 import java.sql.*;
 
@@ -29,7 +30,7 @@ public class UserDAO {
                 System.out.println("Admin account already exists!");
                 return false;
             }
-            user.setEmployeeId(null); // Admin not linked to employee
+            user.setEmployeeId(null);
         } else {
             if (user.getEmployeeId() == null || user.getEmployeeId().isEmpty()) {
                 System.out.println("Employee ID required for Manager or Staff account.");
@@ -51,7 +52,7 @@ public class UserDAO {
                     System.out.println("This employee already has a manager account.");
                     return false;
                 }
-            } else { // Staff
+            } else {
                 if ("Manager".equalsIgnoreCase(emp.getEmpPosition())) {
                     System.out.println("Managers cannot create staff accounts.");
                     return false;
@@ -68,8 +69,11 @@ public class UserDAO {
         try (Connection conn = DBConnect.getDBConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
+            // HASH PASSWORD BEFORE SAVING
+            String hashedPassword = PasswordUtil.hashPassword(user.getPassword());
+
             pstmt.setString(1, user.getUsername());
-            pstmt.setString(2, user.getPassword()); // TODO: Hash in production
+            pstmt.setString(2, hashedPassword);
             pstmt.setString(3, user.getRole());
             pstmt.setString(4, user.getEmployeeId());
 
@@ -81,24 +85,32 @@ public class UserDAO {
         }
     }
 
-    // LOGIN USER
+    // LOGIN USER (with hashed password)
     public User login(String username, String password) {
         if (username.isEmpty() || password.isEmpty()) return null;
 
-        String sql = "SELECT * FROM Users WHERE Username = ? AND Password = ?";
+        String sql = "SELECT * FROM Users WHERE Username = ?";
 
         try (Connection conn = DBConnect.getDBConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setString(1, username);
-            pstmt.setString(2, password); // TODO: hash comparison
 
             ResultSet rs = pstmt.executeQuery();
             if (rs.next()) {
+
+                String storedHash = rs.getString("Password");
+
+                // compare hashed password
+                if (!PasswordUtil.checkPassword(password, storedHash)) {
+                    return null; // WRONG PASSWORD
+                }
+
+                // password valid → return User object
                 return new User(
                         rs.getInt("UserId"),
                         rs.getString("Username"),
-                        rs.getString("Password"),
+                        storedHash,
                         rs.getString("Role"),
                         rs.getString("EmployeeId")
                 );
