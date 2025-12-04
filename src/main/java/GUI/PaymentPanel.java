@@ -190,78 +190,103 @@ public class PaymentPanel extends JPanel {
             DAO.BillDetailsDAO bdDAO = new DAO.BillDetailsDAO();
             java.util.List<Models.BillDetails> items = bdDAO.getByBillId(billId);
 
-            // Create PDF document
+            // --- PDF Setup ---
             org.apache.pdfbox.pdmodel.PDDocument document = new org.apache.pdfbox.pdmodel.PDDocument();
-            org.apache.pdfbox.pdmodel.PDPage page = new org.apache.pdfbox.pdmodel.PDPage();
+            org.apache.pdfbox.pdmodel.PDPage page = new org.apache.pdfbox.pdmodel.PDPage(org.apache.pdfbox.pdmodel.common.PDRectangle.A6); // Use A6 for a smaller, receipt-like page
             document.addPage(page);
 
             org.apache.pdfbox.pdmodel.PDPageContentStream content = new org.apache.pdfbox.pdmodel.PDPageContentStream(document, page);
 
-            // Define starting position for text
-            final int START_X = 50;
-            final int START_Y = 750;
+            // --- Receipt Styling Constants ---
+            final int START_X = 20;
+            final int START_Y = 400;
+            final int FONT_SIZE = 10;
+            final int LINE_HEIGHT = 12;
+            org.apache.pdfbox.pdmodel.font.PDFont receiptFont = org.apache.pdfbox.pdmodel.font.PDType1Font.COURIER; // Monospace for column alignment
+            org.apache.pdfbox.pdmodel.font.PDFont boldFont = org.apache.pdfbox.pdmodel.font.PDType1Font.COURIER_BOLD;
+
             int currentY = START_Y;
 
-            // Add title
             content.beginText();
-            content.setFont(org.apache.pdfbox.pdmodel.font.PDType1Font.HELVETICA_BOLD, 20);
-            content.newLineAtOffset(220, currentY);
-            content.showText("Customer Bill");
-            currentY -= 50;
-            content.endText();
 
-            // Bill info
-            content.beginText();
-            content.setFont(org.apache.pdfbox.pdmodel.font.PDType1Font.HELVETICA, 12);
+            // --- 1. Company Header ---
+            content.setFont(boldFont, 14);
             content.newLineAtOffset(START_X, currentY);
-            content.showText("Bill ID: " + billId);
-            currentY -= 15;
-            content.newLineAtOffset(0, -15);
-            content.showText("Payment Date: " + bill.getBillDate());
-            currentY -= 15;
-            content.newLineAtOffset(0, -15);
-            content.showText("Customer ID: " + bill.getCustomerId());
-            currentY -= 25;
-            content.newLineAtOffset(0, -25); // This offset is cumulative from the previous line
+            content.showText("CLOTHING STORE");
+            currentY -= LINE_HEIGHT * 2;
+            content.newLineAtOffset(0, -(LINE_HEIGHT * 2)); // Move down
 
-            // Table header - FIX: Replace \t with spaces or use separate calls/manual positioning
-            // For simplicity, we'll use separate showText calls to manually position the columns.
-            content.showText("Item");
-            content.newLineAtOffset(150, 0); // Move cursor right by 150 points for Qty
-            content.showText("Qty");
-            content.newLineAtOffset(50, 0); // Move cursor right by 50 points for Price
-            content.showText("Price");
-            content.newLineAtOffset(50, 0); // Move cursor right by 50 points for Total
-            content.showText("Total");
+            content.setFont(receiptFont, FONT_SIZE);
+            content.showText("Date: " + bill.getBillDate());
+            currentY -= LINE_HEIGHT;
+            content.newLineAtOffset(0, -LINE_HEIGHT);
+            content.showText("Bill ID: " + billId + " | Cust ID: " + bill.getCustomerId());
+            currentY -= LINE_HEIGHT;
+            content.newLineAtOffset(0, -LINE_HEIGHT);
 
-            currentY -= 15;
-            content.newLineAtOffset(-250, -15); // Move back to START_X and down for the first item (150+50+50 = 250)
+            // --- Separator ---
+            content.showText("------------------------------------------------");
+            currentY -= LINE_HEIGHT;
+            content.newLineAtOffset(0, -LINE_HEIGHT);
 
-            // Table items - FIX: Replace \t with spaces and use separate calls
+            // --- 2. Table Header ---
+            content.setFont(boldFont, FONT_SIZE);
+            // Column alignment: Item (18 chars), Qty (4 chars), Price (7 chars), Total (7 chars)
+            content.showText(String.format("%-18s %4s %7s %7s", "ITEM", "QTY", "PRICE", "TOTAL"));
+            currentY -= LINE_HEIGHT;
+            content.newLineAtOffset(0, -LINE_HEIGHT);
+
+            // --- 3. Table Items ---
+            content.setFont(receiptFont, FONT_SIZE);
             for (Models.BillDetails bd : items) {
-                // Item
-                content.showText(String.valueOf(bd.getClothId()));
+                String itemName = String.valueOf(bd.getClothId());
+                double itemPrice = bd.getTotalAmount() / bd.getQuantity();
 
+                String line = String.format("%-18s %4d %7.2f %7.2f",
+                        itemName,
+                        bd.getQuantity(),
+                        itemPrice,
+                        bd.getTotalAmount());
 
-                // Qty
-                content.newLineAtOffset(150, 0);
-                content.showText(String.valueOf(bd.getQuantity()));
-
-                // Price
-                content.newLineAtOffset(50, 0);
-                content.showText(String.valueOf(bd.getTotalAmount() / bd.getQuantity()));
-
-                // Total
-                content.newLineAtOffset(50, 0);
-                content.showText(String.valueOf(bd.getTotalAmount()));
-
-                currentY -= 15;
-                content.newLineAtOffset(-250, -15); // Move back to START_X and down for the next item
+                content.showText(line);
+                currentY -= LINE_HEIGHT;
+                content.newLineAtOffset(0, -LINE_HEIGHT);
             }
 
-            // Grand total
-            content.newLineAtOffset(0, -15);
-            content.showText("Grand Total: " + bill.getTotalAmount());
+            // --- Separator ---
+            content.showText("------------------------------------------------");
+            currentY -= LINE_HEIGHT;
+            content.newLineAtOffset(0, -LINE_HEIGHT);
+
+            // --- 4. Totals ---
+            content.setFont(boldFont, FONT_SIZE);
+            // Note: For a real receipt, you might add tax/subtotal lines here
+
+            // Grand Total
+            double grandTotal = Double.parseDouble(String.valueOf(bill.getTotalAmount()));
+
+            content.showText(String.format("%30s %8.2f", "GRAND TOTAL:", grandTotal));
+
+            currentY -= LINE_HEIGHT;
+            content.newLineAtOffset(0, -LINE_HEIGHT);
+
+            // --- Separator ---
+            content.setFont(receiptFont, FONT_SIZE);
+            content.showText("------------------------------------------------");
+            currentY -= LINE_HEIGHT * 2;
+            content.newLineAtOffset(0, -(LINE_HEIGHT * 2));
+
+
+            // --- 5. Payment Footer ---
+            String payType = (String) comboPayType.getSelectedItem();
+            content.showText("PAID BY: " + payType.toUpperCase());
+            currentY -= LINE_HEIGHT * 2;
+            content.newLineAtOffset(0, -(LINE_HEIGHT * 2));
+
+            content.setFont(boldFont, FONT_SIZE);
+            // Reset X to center alignment for the thank you message
+            content.newLineAtOffset(40, 0);
+            content.showText("*** THANK YOU FOR SHOPPING! ***");
 
             content.endText();
             content.close();
@@ -276,12 +301,10 @@ public class PaymentPanel extends JPanel {
             JOptionPane.showMessageDialog(this, "Bill saved as " + fileName);
 
         } catch (Exception ex) {
-            // Note: The original code showed an error dialog here, but the updated code
-            // also completes the payment on success, which seems intended by the button's purpose.
-            // I'll keep the error dialog in the catch block.
             JOptionPane.showMessageDialog(this, "Error generating PDF: " + ex.getMessage());
             ex.printStackTrace();
         }
+
     }
 
 
