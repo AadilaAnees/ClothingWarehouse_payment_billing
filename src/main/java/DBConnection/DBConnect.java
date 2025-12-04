@@ -7,9 +7,9 @@ import java.sql.SQLException;
 public class DBConnect {
 
     public static Connection getDBConnection() {
-        final String DBURL = "jdbc:mysql://localhost:3306/clothing_warehouse?serverTimezone=UTC&useSSL=false";
+        final String DBURL = "jdbc:mysql://localhost:3307/clothing_warehouse?serverTimezone=UTC&useSSL=false";
         final String USERNAME = "root";
-        final String PASSWORD = "Harshana03";
+        final String PASSWORD = "1234";
 
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");

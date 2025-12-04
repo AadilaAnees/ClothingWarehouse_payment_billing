@@ -228,6 +228,11 @@ public class CustomerPanel extends JPanel {
             JOptionPane.showMessageDialog(this, "Customer added successfully!");
             loadCustomers();
             clearForm();
+            MainFrame mainFrame = (MainFrame) SwingUtilities.getWindowAncestor(this);
+            if (mainFrame != null && mainFrame.getSalesPanel() != null) {
+                mainFrame.getSalesPanel().refreshCustomers();
+            }
+
         } else {
             JOptionPane.showMessageDialog(this, "Failed to add customer. Check ID uniqueness or permission.");
         }
@@ -247,6 +252,11 @@ public class CustomerPanel extends JPanel {
             JOptionPane.showMessageDialog(this, "Customer updated successfully!");
             loadCustomers();
             clearForm();
+            MainFrame mainFrame = (MainFrame) SwingUtilities.getWindowAncestor(this);
+            if (mainFrame != null && mainFrame.getSalesPanel() != null) {
+                mainFrame.getSalesPanel().refreshCustomers();
+            }
+
         } else {
             JOptionPane.showMessageDialog(this, "Failed to update customer. Check permissions.");
         }

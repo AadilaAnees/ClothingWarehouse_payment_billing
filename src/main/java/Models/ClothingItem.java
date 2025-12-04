@@ -18,6 +18,25 @@ public class ClothingItem {
         this.SupplierId = SupplierId;
     }
 
+    // Add getters
+    public String getClothId() {
+        return ClothId;
+    }
+
+    public String getCategory() {
+        return Category;
+    }
+
+    public double getPrice() {
+        return Price;
+    }
+
+    // Optional: other getters
+    public String getColor() { return Color; }
+    public String getMaterial() { return Material; }
+    public String getSize() { return Size; }
+    public String getSupplierId() { return SupplierId; }
+
     public String[] toValuesArray() {
         return new String[]{ClothId, Color, Material, Size, Category, String.valueOf(Price), SupplierId};
     }

@@ -20,10 +20,11 @@ public class StaffDashboardPanel extends JPanel {
         buttonPanel.setBorder(BorderFactory.createEmptyBorder(10, 100, 30, 100));
 
         JButton btnBilling = createButton("Billing");
-        btnBilling.addActionListener(e -> mainFrame.switchPanel("Billing"));
+        btnBilling.addActionListener(e -> mainFrame.switchPanel("Sales"));
 
         JButton btnViewStock = createButton("View Stock");
-        btnViewStock.addActionListener(e -> mainFrame.switchPanel("WarehouseStock"));
+        btnViewStock.addActionListener(e -> mainFrame.switchPanel("StaffViewStock"));
+
 
         JButton btnViewCustomers = createButton("View Customers");
         btnViewCustomers.addActionListener(e -> mainFrame.switchPanel("Customer"));

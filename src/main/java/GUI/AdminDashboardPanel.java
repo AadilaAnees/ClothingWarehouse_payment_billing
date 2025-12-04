@@ -24,11 +24,16 @@ public class AdminDashboardPanel extends JPanel {
         btnManageEmployees.addActionListener(e -> mainFrame.switchPanel("Employee"));
 
         JButton btnManageUsers = createButton("Manage Users");
-        btnManageUsers.addActionListener(e -> mainFrame.switchPanel("User")); // only if UserPanel exists
 
         JButton btnWarehouseStock = createButton("Warehouse Stock");
+        btnWarehouseStock.addActionListener(e -> mainFrame.switchPanel("ClothingItem"));
+
         JButton btnPurchasesSuppliers = createButton("Purchases / Suppliers");
+        btnPurchasesSuppliers.addActionListener(e -> mainFrame.switchPanel("Supplier"));
+
         JButton btnSalesBilling = createButton("Sales & Billing");
+        btnSalesBilling.addActionListener(e -> mainFrame.switchPanel("Sales"));
+
         JButton btnReports = createButton("Reports");
 
         JButton btnManageCustomers = createButton("Manage Customers"); // NEW

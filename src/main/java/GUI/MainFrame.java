@@ -4,15 +4,27 @@ import Models.User;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.HashMap;
+import java.util.Map;
 
 public class MainFrame extends JFrame {
 
     private JPanel mainPanel;
     private CardLayout cardLayout;
     private JLabel statusLabel;
-    private User loggedInUser; // Store current user
+    private User loggedInUser;
+    private Map<String, JPanel> panels;// track all panels
 
     private final Color backgroundColor = new Color(245, 245, 245);
+
+    private SalesBillingPanel salesPanel;
+    private StaffViewStockPanel staffViewStockPanel;
+
+
+
+    public SalesBillingPanel getSalesPanel() {
+        return salesPanel;
+    }
 
     public MainFrame() {
         setTitle("Clothing Warehouse Management System");
@@ -21,13 +33,13 @@ public class MainFrame extends JFrame {
         setLocationRelativeTo(null);
         getContentPane().setBackground(backgroundColor);
 
-        // Main panel with CardLayout
+        panels = new HashMap<>();
+
         cardLayout = new CardLayout();
         mainPanel = new JPanel(cardLayout);
         mainPanel.setBackground(backgroundColor);
         add(mainPanel, BorderLayout.CENTER);
 
-        // Status bar
         statusLabel = new JLabel("Welcome! Please login.");
         statusLabel.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         statusLabel.setOpaque(true);
@@ -35,84 +47,117 @@ public class MainFrame extends JFrame {
         statusLabel.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
         add(statusLabel, BorderLayout.SOUTH);
 
-        // Show login panel first
         showLoginPanel();
-
         setVisible(true);
     }
 
-    // Show login panel
     public void showLoginPanel() {
-        mainPanel.removeAll();
-        mainPanel.add(new LoginPanel(this), "Login");
-        cardLayout.show(mainPanel, "Login");
+        LoginPanel loginPanel = new LoginPanel(this);
+        addPanel("Login", loginPanel);
+        switchPanel("Login");
         statusLabel.setText("Please login to continue.");
-        revalidate();
-        repaint();
     }
 
-    // Show signup panel
     public void showSignupPanel() {
-        mainPanel.removeAll();
-        mainPanel.add(new SignupPanel(this), "Signup");
-        cardLayout.show(mainPanel, "Signup");
+        SignupPanel signupPanel = new SignupPanel(this);
+        addPanel("Signup", signupPanel);
+        switchPanel("Signup");
         statusLabel.setText("Create a new account.");
-        revalidate();
-        repaint();
     }
 
-    // Load dashboard based on role
     public void loadDashboardByRole(String role, User user) {
-        loggedInUser = user; // store current user
-        mainPanel.removeAll();
+        loggedInUser = user;
 
         switch (role.toLowerCase()) {
             case "admin":
                 AdminDashboardPanel adminDashboard = new AdminDashboardPanel(this);
+                this.salesPanel = new SalesBillingPanel(this);  // FIXED
+                ClothingItemPanel clothingPanel = new ClothingItemPanel();
                 EmployeePanel adminEmployeePanel = new EmployeePanel(loggedInUser);
                 CustomerPanel adminCustomerPanel = new CustomerPanel(loggedInUser);
-                mainPanel.add(adminDashboard, "Dashboard");
-                mainPanel.add(adminEmployeePanel, "Employee");
-                mainPanel.add(adminCustomerPanel, "Customer");
+                SupplierPanel supplierPanel = new SupplierPanel();
+
+                addPanel("Dashboard", adminDashboard);
+                addPanel("Sales", this.salesPanel);
+                addPanel("ClothingItem", clothingPanel);
+                addPanel("Employee", adminEmployeePanel);
+                addPanel("Customer", adminCustomerPanel);
+                addPanel("Supplier", supplierPanel);
+
+                switchPanel("Dashboard");
                 statusLabel.setText("Welcome Admin!");
                 break;
+
 
             case "manager":
                 ManagerDashboardPanel managerDashboard = new ManagerDashboardPanel(this);
                 EmployeePanel managerEmployeePanel = new EmployeePanel(loggedInUser);
                 CustomerPanel managerCustomerPanel = new CustomerPanel(loggedInUser);
-                mainPanel.add(managerDashboard, "Dashboard");
-                mainPanel.add(managerEmployeePanel, "Employee");
-                mainPanel.add(managerCustomerPanel, "Customer");
+                ClothingItemPanel managerclothingPanel = new ClothingItemPanel();
+                this.salesPanel = new SalesBillingPanel(this);
+
+                addPanel("Dashboard", managerDashboard);
+                addPanel("Employee", managerEmployeePanel);
+                addPanel("Customer", managerCustomerPanel);
+                addPanel("Sales", this.salesPanel);
+                addPanel("Warehouse", managerclothingPanel);
+
+
+                switchPanel("Dashboard");
                 statusLabel.setText("Welcome Manager!");
                 break;
 
             case "staff":
                 StaffDashboardPanel staffDashboard = new StaffDashboardPanel(this);
-                CustomerPanel staffCustomerPanel = new CustomerPanel(loggedInUser); // <-- added for staff
-                mainPanel.add(staffDashboard, "Dashboard");
-                mainPanel.add(staffCustomerPanel, "Customer"); // <-- register customer panel
+                CustomerPanel staffCustomerPanel = new CustomerPanel(loggedInUser);
+                staffViewStockPanel = new StaffViewStockPanel(this);
+                this.salesPanel = new SalesBillingPanel(this);
+
+
+                addPanel("Sales", this.salesPanel);
+                addPanel("Dashboard", staffDashboard);
+                addPanel("Customer", staffCustomerPanel);
+                addPanel("StaffViewStock", staffViewStockPanel);
+
+
+                switchPanel("Dashboard");
                 statusLabel.setText("Welcome Staff!");
                 break;
 
             default:
                 JOptionPane.showMessageDialog(this, "Unknown role: " + role);
                 showLoginPanel();
-                return;
         }
-
         cardLayout.show(mainPanel, "Dashboard");
         revalidate();
         repaint();
+
+
     }
 
-    // Switch to a panel by name
-    public void switchPanel(String panelName) {
-        cardLayout.show(mainPanel, panelName);
-        statusLabel.setText("You are in " + panelName + " module");
+    // Dynamic panel handling
+    public void addPanel(String name, JPanel panel) {
+        panels.put(name, panel);
+        mainPanel.add(panel, name);
+    }
+
+    public void switchPanel(String name) {
+        if (panels.containsKey(name)) {
+            cardLayout.show(mainPanel, name);
+            statusLabel.setText("You are in " + name + " module");
+        }
+    }
+
+    public void setLoggedInUser(User user) {
+        this.loggedInUser = user;
+    }
+    public User getLoggedInUser() {
+        return loggedInUser;
     }
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(MainFrame::new);
     }
+
+
 }

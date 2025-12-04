@@ -11,11 +11,17 @@ import java.util.List;
 public class EmployeeDAO {
 
     // --- Role-based access ---
-    private boolean hasPermission(User user, String operation) {
+    private boolean hasPermission(User user, String operation, String position) {
         if (user == null) return false;
         String role = user.getRole();
         switch (operation.toUpperCase()) {
             case "ADD":
+                if ("Admin".equalsIgnoreCase(role)) return true;
+                if ("Manager".equalsIgnoreCase(role)) {
+                    // Manager cannot add another manager
+                    return !"Manager".equalsIgnoreCase(position);
+                }
+                return false;
             case "DELETE":
                 return "Admin".equalsIgnoreCase(role);
             case "UPDATE":
@@ -30,8 +36,9 @@ public class EmployeeDAO {
 
     // --- CRUD Operations with Role Check ---
     public boolean insert(Employee emp, User user) {
-        if (!hasPermission(user, "ADD")) return false;
         if (emp == null || emp.getEmployeeId().isEmpty() || exists(emp.getEmployeeId())) return false;
+
+        if (!hasPermission(user, "ADD", emp.getEmpPosition())) return false;
 
         String sql = "INSERT INTO Employee (EmployeeId, EmpName, TellNo, Salary, EmpPosition) VALUES (?, ?, ?, ?, ?)";
         try (Connection conn = DBConnect.getDBConnection();
@@ -51,7 +58,7 @@ public class EmployeeDAO {
     }
 
     public boolean update(Employee emp, User user) {
-        if (!hasPermission(user, "UPDATE")) return false;
+        if (!hasPermission(user, "UPDATE", emp.getEmpPosition())) return false;
         if (emp == null || emp.getEmployeeId().isEmpty()) return false;
 
         String sql = "UPDATE Employee SET EmpName = ?, TellNo = ?, Salary = ?, EmpPosition = ? WHERE EmployeeId = ?";
@@ -72,7 +79,7 @@ public class EmployeeDAO {
     }
 
     public boolean delete(String employeeId, User user) {
-        if (!hasPermission(user, "DELETE")) return false;
+        if (!hasPermission(user, "DELETE", null)) return false;
         if (employeeId.isEmpty()) return false;
 
         String sql = "DELETE FROM Employee WHERE EmployeeId = ?";
@@ -87,7 +94,7 @@ public class EmployeeDAO {
         }
     }
 
-    // --- Read Operations (all roles can access) ---
+    // --- Read Operations ---
     public Employee getById(String employeeId) {
         String sql = "SELECT * FROM Employee WHERE EmployeeId = ?";
         try (Connection conn = DBConnect.getDBConnection();
@@ -158,7 +165,6 @@ public class EmployeeDAO {
         return list;
     }
 
-    // --- Check if Employee exists ---
     public boolean exists(String employeeId) {
         String sql = "SELECT COUNT(*) FROM Employee WHERE EmployeeId = ?";
         try (Connection conn = DBConnect.getDBConnection();

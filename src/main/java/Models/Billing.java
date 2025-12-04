@@ -41,4 +41,19 @@ public class Billing {
     public String[] toValuesArray() {
         return new String[]{BillDate, String.valueOf(Amount), BillDescription, BillStatus, PaymentId, CustomerId};
     }
+
+    public void setStatus(String paid) {
+    }
+
+    public String getBillDate() {
+        return BillDate;
+    }
+
+    public String getCustomerId() {
+        return CustomerId;
+    }
+
+    public String getTotalAmount() {
+        return String.valueOf(Amount);
+    }
 }

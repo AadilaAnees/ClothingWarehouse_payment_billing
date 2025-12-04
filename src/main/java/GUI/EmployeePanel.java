@@ -102,10 +102,7 @@ public class EmployeePanel extends JPanel {
             }
         });
 
-// Add Back button to the button panel (below other buttons)
         buttonPanel.add(btnBack);
-
-
 
         btnAdd = createButton("Add");
         btnUpdate = createButton("Update");
@@ -239,6 +236,12 @@ public class EmployeePanel extends JPanel {
 
             double salary = Double.parseDouble(salaryStr);
             Employee emp = new Employee(id, name, phone, salary, position);
+
+            if ("Manager".equalsIgnoreCase(position) && "Manager".equalsIgnoreCase(currentUser.getRole())) {
+                JOptionPane.showMessageDialog(this, "Managers cannot add another Manager.");
+                return;
+            }
+
             if (employeeDAO.insert(emp, currentUser)) {
                 JOptionPane.showMessageDialog(this, "Employee added successfully!");
                 loadEmployees();

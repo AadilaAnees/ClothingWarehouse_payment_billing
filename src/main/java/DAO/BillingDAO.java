@@ -134,4 +134,32 @@ public class BillingDAO {
 
         return list;
     }
+    // Insert new Billing and return generated BillId
+    public int insertAndGetId(Billing bill) {
+        String sql = "INSERT INTO Billing (BillDate, Amount, BillDescription, BillStatus, PaymentId, CustomerId) VALUES (?, ?, ?, ?, ?, ?)";
+        try (Connection conn = DBConnect.getDBConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+
+            String[] values = bill.toValuesArray();
+            pstmt.setString(1, values[0]);
+            pstmt.setDouble(2, Double.parseDouble(values[1]));
+            pstmt.setString(3, values[2]);
+            pstmt.setString(4, values[3]);
+            pstmt.setString(5, values[4]);
+            pstmt.setString(6, values[5]);
+
+            pstmt.executeUpdate();
+
+            ResultSet rs = pstmt.getGeneratedKeys();
+            if (rs.next()) {
+                return rs.getInt(1); // return generated BillId
+            }
+
+        } catch (SQLException e) {
+            System.out.println("Error inserting Billing: " + e.getMessage());
+        }
+        return -1;
+    }
+
+
 }

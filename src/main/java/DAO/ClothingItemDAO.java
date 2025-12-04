@@ -126,4 +126,5 @@ public class ClothingItemDAO {
 
         return list;
     }
+
 }

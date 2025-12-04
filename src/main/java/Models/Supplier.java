@@ -2,16 +2,28 @@ package Models;
 
 public class Supplier {
     private String supplierId;
-    private String SupName;
-    private String TellNo;
+    private String name;
+    private String contact;
 
-    public Supplier(String supplierId, String SupName, String TellNo) {
+
+    public Supplier(String supplierId, String name, String contact) {
         this.supplierId = supplierId;
-        this.SupName = SupName;
-        this.TellNo = TellNo;
+        this.name = name;
+        this.contact = contact;
+
     }
 
-    public String[] toValuesArray() {
-        return new String[]{supplierId, SupName, TellNo};
+    public String getSupplierId() {
+        return supplierId;
     }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getContact() {
+        return contact;
+    }
+
+
 }

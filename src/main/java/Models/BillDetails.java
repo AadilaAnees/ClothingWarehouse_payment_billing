@@ -15,5 +15,17 @@ public class BillDetails {
     public String[] toValuesArray() {
         return new String[]{BillId, ClothId, String.valueOf(Quantity), String.valueOf(TotalAmount)};
     }
+
+    public String getClothId() {
+        return ClothId;
+    }
+    public int getQuantity() {
+        return Quantity;
+    }
+
+
+    public double getTotalAmount() {
+        return TotalAmount;
+    }
 }
 

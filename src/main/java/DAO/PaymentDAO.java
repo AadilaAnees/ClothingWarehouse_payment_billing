@@ -121,4 +121,31 @@ public class PaymentDAO {
 
         return list;
     }
+    // Insert new Payment and return generated PaymentId
+    public int insertAndGetId(Payment p) {
+        String sql = "INSERT INTO Payment (PayType, Amount, PayDate, EmployeeId, CustomerId) VALUES (?, ?, ?, ?, ?)";
+
+        try (Connection conn = DBConnect.getDBConnection();
+             PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+
+            ps.setString(1, p.getPayType());                 // PayType
+            ps.setDouble(2, p.getAmount());                  // Amount
+            ps.setDate(3, Date.valueOf(p.getPayDate()));     // PayDate
+            ps.setString(4, p.getEmployeeId());              // EmployeeId
+            ps.setString(5, p.getCustomerId());              // CustomerId
+
+            int affected = ps.executeUpdate();
+            if (affected == 0) return -1;
+
+            ResultSet rs = ps.getGeneratedKeys();
+            if (rs.next()) {
+                return rs.getInt(1); // return generated PaymentId
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return -1;
+    }
+
 }
